@@ -73,7 +73,7 @@ DATABASES = {
         'NAME': 'swiper',
 		'HOST':'101.200.73.123',
 		'USER':'fengchen',
-		'PASSWORD':'01023014lL.',
+		'PASSWORD':'123456',
     }
 }
 
