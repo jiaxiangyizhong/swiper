@@ -1,34 +1,19 @@
 from django.core.cache import cache
-from django.http import HttpResponse, JsonResponse
-from django.shortcuts import render
-
-# Create your views here.
+from django.http import JsonResponse
+from User.logic import send_vcode
 from User.models import User, Show
-from User.sms import send_code
 
 
-def index(request):
-    return HttpResponse('index')
-
-
-def fetch(request):
+def fetch_vcode(request):
+    '''给用户发送验证码'''
     phonenum = request.GET.get('phonenum')
-    data = send_code(phonenum)
-    vcode = data['vcode']
-    print(vcode)
-    cache.set(phonenum, vcode, timeout=60*10)
-
-    result = {
-        'code': 0,
-        'data': 'null'
-    }
-    if data['response'] == 200:
-        return JsonResponse(result)
-    result['code'] = 1000
-    return JsonResponse(result)
+    if send_vcode(phonenum):
+        return JsonResponse({'code': 0, 'data': None})
+    return JsonResponse({'code': 1000, 'data': None})
 
 
-def submit(request):
+def submit_vcode(request):
+    '''提交验证码，执行登录注册'''
     if request.method == 'POST':
         phonenum = request.POST.get('phonenum')
         vcode = cache.get(phonenum)
@@ -76,7 +61,8 @@ def submit(request):
         return JsonResponse(result)
 
 
-def show(request):
+def show_profile(request):
+    '''查看个人资料'''
     uid = request.session.get('uid')
     shows = Show.objects.all()
     for show in shows:
@@ -117,7 +103,8 @@ def show(request):
     return JsonResponse(result)
 
 
-def update(request):
+def update_profile(request):
+    '''更新个人资料'''
     if request.method == 'POST':
         nickname = request.POST.get('nickname')
         birthday = request.POST.get('birthday')
@@ -160,3 +147,13 @@ def update(request):
         }
 
         return JsonResponse(result)
+
+
+def qn_token(request):
+    '''获取七牛云token'''
+    pass
+
+
+def qn_callback(request):
+    '''七牛云回调接口'''
+    pass
