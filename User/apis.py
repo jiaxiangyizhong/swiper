@@ -9,56 +9,32 @@ def fetch_vcode(request):
     phonenum = request.GET.get('phonenum')
     if send_vcode(phonenum):
         return JsonResponse({'code': 0, 'data': None})
-    return JsonResponse({'code': 1000, 'data': None})
+    return JsonResponse({'code': 1000, 'data': '验证码发送失败'})
 
 
 def submit_vcode(request):
     '''提交验证码，执行登录注册'''
     if request.method == 'POST':
         phonenum = request.POST.get('phonenum')
-        vcode = cache.get(phonenum)
+        vcode = request.POST.get('vcode')
+
+        key = 'Vcode-%s' % phonenum
+        cache_vcode = cache.get(key)
         print(vcode)
-        code = request.POST.get('vcode')
 
-        if code != vcode:
-            result = {
-                'code': 1001,
-                'data': 'null'
-            }
-            return JsonResponse(result)
+        if vcode and vcode == cache_vcode:
+            try:
+                user = User.objects.get(phonenum=phonenum)  # 从数据库获取用户
+            except User.DoesNotExist:
+                # 如果用户不存在，则注册
+                user = User.objects.create(phonenum=phonenum, nickname=phonenum)
 
-        users = User.objects.all()
-        for user in users:
-            if user.phonenum == phonenum:
-                result = {
-                    'code': 0,
-                    'data': {
-                        'id': user.id,
-                        'nickname': user.nickname,
-                        'phonenum': user.phonenum,
-                        'birthday': user.birthday,
-                        'gender': user.gender,
-                        'location': user.location,
-                    }
-                }
-                request.session['uid'] = result['data']['id']
-                print(result['data']['id'])
-                return JsonResponse(result)
-        user = User.objects.create(phonenum=phonenum, nickname=phonenum)
-        result = {
-            'code': 0,
-            'data': {
-                'id': user.id,
-                'nickname': user.nickname,
-                'phonenum': user.phonenum,
-                'birthday': user.birthday,
-                'gender': user.gender,
-                'location': user.location,
-            }
-        }
-        request.session['uid'] = result['data']['id']
-        print(result['data']['id'])
-        return JsonResponse(result)
+            # 在session中记录用户登录状态
+            request.session['uid'] = user.id
+
+            return JsonResponse({'code': 0, 'data': user.to_dict()})
+
+        return JsonResponse({'code': 1001, 'data': '验证码错误'})
 
 
 def show_profile(request):

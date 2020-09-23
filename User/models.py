@@ -26,6 +26,17 @@ class User(models.Model):
     class Meta:
         db_table = 'user'
 
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'phonenum': self.phonenum,
+            'nickname': self.nickname,
+            'gender': self.gender,
+            'birthday': str(self.birthday),
+            'avatar': self.avatar,
+            'location': self.location
+        }
+
 
 class Show(models.Model):
     uid = models.IntegerField()
