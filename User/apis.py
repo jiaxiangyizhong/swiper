@@ -20,7 +20,6 @@ def submit_vcode(request):
 
         key = 'Vcode-%s' % phonenum
         cache_vcode = cache.get(key)
-        print(vcode)
 
         if vcode and vcode == cache_vcode:
             try:
@@ -33,8 +32,8 @@ def submit_vcode(request):
             request.session['uid'] = user.id
 
             return JsonResponse({'code': 0, 'data': user.to_dict()})
-
-        return JsonResponse({'code': 1001, 'data': '验证码错误'})
+        else:
+            return JsonResponse({'code': 1001, 'data': '验证码错误'})
 
 
 def show_profile(request):
