@@ -1,11 +1,11 @@
 from django.urls import path
 
-from User import views
+from User import apis
 
 urlpatterns = [
-    path('index/', views.index),
-    path('vcode/fetch/', views.fetch),
-    path('vcode/submit/', views.submit),
-    path('profile/show/', views.show),
-    path('profile/update/', views.update),
+    path('index/', apis.index),
+    path('vcode/fetch/', apis.fetch),
+    path('vcode/submit/', apis.submit),
+    path('profile/show/', apis.show),
+    path('profile/update/', apis.update),
 ]

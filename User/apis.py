@@ -13,12 +13,16 @@ def index(request):
 
 def fetch(request):
     phonenum = request.GET.get('phonenum')
-    response = send_code(phonenum)
+    data = send_code(phonenum)
+    vcode = data['vcode']
+    print(vcode)
+    cache.set(phonenum, vcode, timeout=60*10)
+
     result = {
         'code': 0,
         'data': 'null'
     }
-    if response == 200:
+    if data['response'] == 200:
         return JsonResponse(result)
     result['code'] = 1000
     return JsonResponse(result)
@@ -27,15 +31,16 @@ def fetch(request):
 def submit(request):
     if request.method == 'POST':
         phonenum = request.POST.get('phonenum')
-        # code = request.POST.get('vcode')
-        #
-        # vcode = cache.get(phonenum)
-        # if code != vcode:
-        #     result = {
-        #         'code': 1001,
-        #         'data': 'null'
-        #     }
-        #     return JsonResponse(result)
+        vcode = cache.get(phonenum)
+        print(vcode)
+        code = request.POST.get('vcode')
+
+        if code != vcode:
+            result = {
+                'code': 1001,
+                'data': 'null'
+            }
+            return JsonResponse(result)
 
         users = User.objects.all()
         for user in users:

@@ -120,12 +120,12 @@ USE_TZ = False
 STATIC_URL = '/static/'
 
 CACHES = {
-    'default': {
-        'BACKEND': 'django_redis.cache.RedisCache',
-        # linux:  'LOCATION': 'redis://:你的密码@服务器地址:6379/0',
-        #  'LOCATION': 'redis://服务器地址:6379/0',
-        'LOCATION': 'redis://101.200.73.123:6379/0',
-        # redis-cli
-        'OPTIONS': {'CLIENT_CLASS': 'django_redis.client.DefaultClient', "PICKLE_VERSION": -1}
+    "default": {
+        "BACKEND": "django_redis.cache.RedisCache",
+        "LOCATION": "redis://101.200.73.123:6379/0",
+        "OPTIONS": {
+            "CLIENT_CLASS": "django_redis.client.DefaultClient",
+            "PICKLE_VERSION": -1,
+        }
     }
 }
