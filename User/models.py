@@ -28,7 +28,7 @@ class User(models.Model):
 
     @property
     def profile(self):
-        if not hasattr(self,'_profile'):
+        if not hasattr(self, '_profile'):
             self._profile, _ = Profile.objects.get_or_create(id=self.id)
         return self._profile
 
@@ -62,6 +62,7 @@ class Profile(models.Model):
 
     def to_dict(self):
         return {
+            'id': self.id,
             'dating_gender': self.dating_gender,
             'dating_location': self.dating_location,
             'max_distance': self.max_distance,

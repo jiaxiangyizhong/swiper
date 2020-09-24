@@ -38,13 +38,9 @@ def submit_vcode(request):
 
 def show_profile(request):
     '''查看个人资料'''
-    uid = request.session.get('uid')
-    try:
-        show = Profile.objects.get(uid=uid)
-    except Profile.DoesNotExist:
-        show = Profile.objects.create(uid=uid)
-
-    return JsonResponse({'code': 0, 'data': show.to_dict()})
+    uid = request.session['uid']
+    profile, _ = Profile.objects.get_or_create(id=uid)
+    return JsonResponse({'code': 0, 'data': profile.to_dict()})
 
 
 def update_profile(request):
@@ -91,7 +87,6 @@ def update_profile(request):
         }
 
         return JsonResponse(result)
-
 
 
 def qn_token(request):
