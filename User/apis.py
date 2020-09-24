@@ -39,43 +39,12 @@ def submit_vcode(request):
 def show_profile(request):
     '''查看个人资料'''
     uid = request.session.get('uid')
-    shows = Show.objects.all()
-    for show in shows:
-        if show.uid == uid:
-            result = {
-                'code': 0,
-                'data': {
-                    'id': show.uid,
-                    'dating_gender': show.dating_gender,
-                    'dating_location': show.dating_location,
-                    'max_distance': show.max_distance,
-                    'min_distance': show.min_distance,
-                    'max_dating_age': show.max_dating_age,
-                    'min_dating_age': show.min_dating_age,
-                    'vibration': show.vibration,
-                    'only_matched': show.only_matched,
-                    'auto_play': show.auto_play,
-                }
-            }
-            return JsonResponse(result)
+    try:
+        show = Show.objects.get(uid=uid)
+    except Show.DoesNotExist:
+        show = Show.objects.create(uid=uid)
 
-    show = Show.objects.create(uid=uid)
-    result = {
-        'code': 0,
-        'data': {
-            'id': show.uid,
-            'dating_gender': show.dating_gender,
-            'dating_location': show.dating_location,
-            'max_distance': show.max_distance,
-            'min_distance': show.min_distance,
-            'max_dating_age': show.max_dating_age,
-            'min_dating_age': show.min_dating_age,
-            'vibration': show.vibration,
-            'only_matched': show.only_matched,
-            'auto_play': show.auto_play,
-        }
-    }
-    return JsonResponse(result)
+    return JsonResponse({'code': 0, 'data': show.to_dict()})
 
 
 def update_profile(request):

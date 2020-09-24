@@ -52,3 +52,17 @@ class Show(models.Model):
 
     class Meta:
         db_table = 'show'
+
+    def to_dict(self):
+        return {
+            'uid': self.uid,
+            'dating_gender': self.dating_gender,
+            'dating_location': self.dating_location,
+            'max_distance': self.max_distance,
+            'min_distance': self.min_distance,
+            'max_dating_age': self.max_dating_age,
+            'min_dating_age': self.min_dating_age,
+            'vibration': self.vibration,
+            'only_matched': self.only_matched,
+            'auto_play': self.auto_play,
+        }
