@@ -38,17 +38,19 @@ class User(models.Model):
         }
 
 
-class Show(models.Model):
+class Profile(models.Model):
     uid = models.IntegerField()
-    dating_gender = models.CharField(max_length=16, default='female')
-    dating_location = models.CharField(max_length=16, default='北京')
-    max_distance = models.IntegerField(default=10)
-    min_distance = models.IntegerField(default=1)
-    max_dating_age = models.IntegerField(default=50)
-    min_dating_age = models.IntegerField(default=20)
-    vibration = models.BooleanField(default=0)
-    only_matched = models.BooleanField(default=0)
-    auto_play = models.BooleanField(default=0)
+    dating_gender = models.CharField(max_length=8, default='female',
+                                     choices=User.GENDERS, verbose_name='匹配的性别')
+    dating_location = models.CharField(max_length=16, default='北京',
+                                       choices=User.LOCATIONS, verbose_name='目标城市')
+    max_distance = models.IntegerField(default=50, verbose_name='最大查找范围')
+    min_distance = models.IntegerField(default=1, verbose_name='最小查找范围')
+    max_dating_age = models.IntegerField(default=50, verbose_name='最大交友年龄')
+    min_dating_age = models.IntegerField(default=18, verbose_name='最小交友年龄')
+    vibration = models.BooleanField(default=True, verbose_name='开启震动')
+    only_matched = models.BooleanField(default=True, verbose_name='不让陌生人看我的相册')
+    auto_play = models.BooleanField(default=True, verbose_name='自动播放视频')
 
     class Meta:
         db_table = 'show'
