@@ -26,6 +26,12 @@ class User(models.Model):
     class Meta:
         db_table = 'user'
 
+    @property
+    def profile(self):
+        if not hasattr(self,'_profile'):
+            self._profile, _ = Profile.objects.get_or_create(id=self.id)
+        return self._profile
+
     def to_dict(self):
         return {
             'id': self.id,
@@ -39,7 +45,6 @@ class User(models.Model):
 
 
 class Profile(models.Model):
-    uid = models.IntegerField()
     dating_gender = models.CharField(max_length=8, default='female',
                                      choices=User.GENDERS, verbose_name='匹配的性别')
     dating_location = models.CharField(max_length=16, default='北京',
@@ -53,11 +58,10 @@ class Profile(models.Model):
     auto_play = models.BooleanField(default=True, verbose_name='自动播放视频')
 
     class Meta:
-        db_table = 'show'
+        db_table = 'profile'
 
     def to_dict(self):
         return {
-            'uid': self.uid,
             'dating_gender': self.dating_gender,
             'dating_location': self.dating_location,
             'max_distance': self.max_distance,

@@ -1,7 +1,7 @@
 from django.core.cache import cache
 from django.http import JsonResponse
 from User.logic import send_vcode
-from User.models import User, Show
+from User.models import User, Profile
 
 
 def fetch_vcode(request):
@@ -40,9 +40,9 @@ def show_profile(request):
     '''查看个人资料'''
     uid = request.session.get('uid')
     try:
-        show = Show.objects.get(uid=uid)
-    except Show.DoesNotExist:
-        show = Show.objects.create(uid=uid)
+        show = Profile.objects.get(uid=uid)
+    except Profile.DoesNotExist:
+        show = Profile.objects.create(uid=uid)
 
     return JsonResponse({'code': 0, 'data': show.to_dict()})
 
@@ -66,7 +66,7 @@ def update_profile(request):
 
         uid = request.session.get('uid')
         user = User.objects.get(pk=uid)
-        show = Show.objects.filter(uid=uid)[0]
+        show = Profile.objects.filter(uid=uid)[0]
 
         user.nickname = nickname
         user.birthday = birthday
@@ -91,6 +91,7 @@ def update_profile(request):
         }
 
         return JsonResponse(result)
+
 
 
 def qn_token(request):
