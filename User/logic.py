@@ -1,7 +1,10 @@
 import re
-from django.core.cache import cache
+
+from common import keys
 from libs.sms import send_sms
+from libs.cache import rds
 import random
+from tasks import celery_app
 
 
 def is_phonenum(phonenum):
@@ -17,6 +20,7 @@ def random_code(length=6):
     return ''.join(nums)
 
 
+@celery_app.task
 def send_vcode(phonenum):
     ''' 给用户发送短信验证码 '''
 
@@ -24,15 +28,15 @@ def send_vcode(phonenum):
     if not is_phonenum(phonenum):
         return False
 
-    key = 'Vcode-%s' % phonenum
+    key = keys.VCODE_K % phonenum
     # 检查缓存中是否已有验证码，防止用户频繁调用接口
-    if cache.get(key):
+    if rds.get(key):
         return True
 
     # 产生验证码
     vcode = random_code()
     print('随机码：', vcode)
-    cache.set('Vcode-%s' % phonenum, vcode, timeout=600)  # 将验证码添加到缓存中，并多设置一些时间
+    rds.set(key, vcode)
 
     # 向用户手机发送验证码
     return send_sms(phonenum, vcode)

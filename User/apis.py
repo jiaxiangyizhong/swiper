@@ -1,15 +1,19 @@
-from django.core.cache import cache
-from django.http import JsonResponse
 from User.logic import send_vcode
+from common import errors
+from common import keys
+from libs.cache import rds
+from libs.http import render_json
 from User.models import User, Profile
+from User.forms import UserForm, ProfileForm
+from libs.qn_cloud import gen_token, get_res_url
 
 
 def fetch_vcode(request):
     '''给用户发送验证码'''
     phonenum = request.GET.get('phonenum')
-    if send_vcode(phonenum):
-        return JsonResponse({'code': 0, 'data': None})
-    return JsonResponse({'code': 1000, 'data': '验证码发送失败'})
+
+    send_vcode.delay(phonenum)  # 异步发送短信验证码
+    return render_json()
 
 
 def submit_vcode(request):
@@ -18,8 +22,8 @@ def submit_vcode(request):
         phonenum = request.POST.get('phonenum')
         vcode = request.POST.get('vcode')
 
-        key = 'Vcode-%s' % phonenum
-        cache_vcode = cache.get(key)
+        key = keys.VCODE_K % phonenum
+        cache_vcode = rds.get(key)
 
         if vcode and vcode == cache_vcode:
             try:
@@ -31,69 +35,51 @@ def submit_vcode(request):
             # 在session中记录用户登录状态
             request.session['uid'] = user.id
 
-            return JsonResponse({'code': 0, 'data': user.to_dict()})
+            return render_json(user.to_dict())
         else:
-            return JsonResponse({'code': 1001, 'data': '验证码错误'})
+            return render_json(code=errors.VCODE_ERR, data='验证码错误')
 
 
 def show_profile(request):
     '''查看个人资料'''
     uid = request.session['uid']
     profile, _ = Profile.objects.get_or_create(id=uid)
-    return JsonResponse({'code': 0, 'data': profile.to_dict()})
+    return render_json(profile.to_dict())
 
 
 def update_profile(request):
     '''更新个人资料'''
-    if request.method == 'POST':
-        nickname = request.POST.get('nickname')
-        birthday = request.POST.get('birthday')
-        gender = request.POST.get('gender')
-        location = request.POST.get('location')
-        dating_gender = request.POST.get('dating_gender')
-        dating_location = request.POST.get('dating_location')
-        max_distance = request.POST.get('max_distance')
-        min_distance = request.POST.get('min_distance')
-        max_dating_age = request.POST.get('max_dating_age')
-        min_dating_age = request.POST.get('min_dating_age')
-        vibration = request.POST.get('vibration')
-        only_matched = request.POST.get('only_matched')
-        auto_play = request.POST.get('auto_play')
+    # 定义form对象
+    user_form = UserForm(request.POST)
+    profile_form = ProfileForm(request.POST)
 
-        uid = request.session.get('uid')
-        user = User.objects.get(pk=uid)
-        show = Profile.objects.filter(uid=uid)[0]
+    # 检查验证数据
+    if user_form.is_valid() and profile_form.is_valid():
+        uid = request.session['uid']
 
-        user.nickname = nickname
-        user.birthday = birthday
-        user.gender = gender
-        user.location = location
-        user.save()
+        User.objects.filter(id=uid).update(**user_form.cleaned_data)
+        Profile.objects.update_or_create(id=uid, defaults=profile_form.cleaned_data)
+        return render_json()
 
-        show.dating_gender = dating_gender
-        show.dating_location = dating_location
-        show.max_distance = max_distance
-        show.min_distance = min_distance
-        show.max_dating_age = max_dating_age
-        show.min_dating_age = min_dating_age
-        show.vibration = vibration
-        show.only_matched = only_matched
-        show.auto_play = auto_play
-        show.save()
-
-        result = {
-            'code': 0,
-            'data': 'null',
-        }
-
-        return JsonResponse(result)
+    err = {}
+    err.update(user_form.errors)
+    err.update(profile_form.errors)
+    return render_json(data=err, code=errors.PROFILE_ERR)
 
 
 def qn_token(request):
     '''获取七牛云token'''
-    pass
+    uid = request.session['uid']
+    filename = f'Avatar-{uid}'
+    token = gen_token(uid, filename)
+    return render_json({'token': token, 'key': filename})
 
 
 def qn_callback(request):
     '''七牛云回调接口'''
-    pass
+    uid = request.POST.get('uid')
+    key = request.POST.get('key')
+    avatar_url = get_res_url(key)
+    user = User.objects.filter(id=uid).update(avatar=avatar_url)
+
+    return render_json(avatar_url)

@@ -16,9 +16,10 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path
 from User import apis as user_api
+from home import views
 
 urlpatterns = [
-    path('admin/', admin.site.urls),
+    path('', views.index),
     path('api/user/vcode/fetch/', user_api.fetch_vcode),
     path('api/user/vcode/submit/', user_api.submit_vcode),
     path('api/user/profile/show/', user_api.show_profile),
