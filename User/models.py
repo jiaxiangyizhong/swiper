@@ -23,6 +23,9 @@ class User(models.Model):
     avatar = models.CharField(default='', max_length=256, verbose_name='个人形象')
     location = models.CharField(default='北京', max_length=16, choices=LOCATIONS, verbose_name='常居地')
 
+    vip_id = models.IntegerField(verbose_name='用户对应的VIP的ID', default=1)
+    vip_expire = models.DateTimeField(default='3000-12-31', verbose_name='VIP过期时间')
+
     class Meta:
         db_table = 'user'
 

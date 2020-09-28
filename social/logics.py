@@ -136,3 +136,4 @@ def find_my_fans(uid):
 
     users = User.objects.filter(id__in=fans_id_list)
     return users
+
