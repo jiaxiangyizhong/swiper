@@ -13,6 +13,9 @@ def fetch_vcode(request):
     phonenum = request.GET.get('phonenum')
 
     send_vcode.delay(phonenum)  # 异步发送短信验证码
+    key = keys.VCODE_K % phonenum
+    vcode = rds.get(key)
+    print(vcode)
     return render_json()
 
 
@@ -80,6 +83,6 @@ def qn_callback(request):
     uid = request.POST.get('uid')
     key = request.POST.get('key')
     avatar_url = get_res_url(key)
-    user = User.objects.filter(id=uid).update(avatar=avatar_url)
+    User.objects.filter(id=uid).update(avatar=avatar_url)
 
     return render_json(avatar_url)
