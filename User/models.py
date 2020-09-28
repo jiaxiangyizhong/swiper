@@ -1,7 +1,11 @@
+import datetime
+
 from django.db import models
 
-
 # Create your models here.
+from vip.models import Vip
+
+
 class User(models.Model):
     GENDERS = (
         ('male', '男性'),
@@ -31,9 +35,30 @@ class User(models.Model):
 
     @property
     def profile(self):
+        '''当前用户对应的profile'''
         if not hasattr(self, '_profile'):
             self._profile, _ = Profile.objects.get_or_create(id=self.id)
         return self._profile
+
+    @property
+    def vip(self):
+        '''当前用户对应的vip'''
+        # 检查当前会员是否过期
+        now = datetime.datetime.now()
+        if now >= self.vip_expire:
+            self.set_vip(1)  # 过期时间后强制设置成非会员
+
+        if not hasattr(self, '_vip'):
+            self._vip = Vip.objects.get(id=self.vip_id)
+        return self._vip
+
+    def set_vip(self, vip_id):
+        '''设置当前用户的vip'''
+        vip = Vip.objects.get(id=vip_id)
+        self.vip_id = vip_id
+        self.vip_expire = datetime.datetime.now() + datetime.timedelta(vip.duration)
+        self._vip = vip
+        self.save()
 
     def to_dict(self):
         return {
