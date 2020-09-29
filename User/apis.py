@@ -1,3 +1,5 @@
+import logging
+
 from User.logic import send_vcode
 from common import errors
 from common import keys
@@ -6,6 +8,8 @@ from libs.http import render_json
 from User.models import User, Profile
 from User.forms import UserForm, ProfileForm
 from libs.qn_cloud import gen_token, get_res_url
+
+inf_log = logging.getLogger('inf')
 
 
 def fetch_vcode(request):
@@ -31,9 +35,12 @@ def submit_vcode(request):
         if vcode and vcode == cache_vcode:
             try:
                 user = User.objects.get(phonenum=phonenum)  # 从数据库获取用户
+                inf_log.info(f'User Login:{user.id} / {user.phonenum}')
             except User.DoesNotExist:
                 # 如果用户不存在，则注册
                 user = User.objects.create(phonenum=phonenum, nickname=phonenum)
+                inf_log.info(f'User Register:{user.id} / {user.phonenum}')
+
 
             # 在session中记录用户登录状态
             request.session['uid'] = user.id

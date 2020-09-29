@@ -1,8 +1,6 @@
 from django.db import models
 
 
-# Create your models here.
-
 class Vip(models.Model):
     '''会员表'''
     name = models.CharField(max_length=20, unique=True, verbose_name='会员名称')

@@ -19,3 +19,4 @@ def perm_required(perm_name):
         return wrapper
 
     return deco
+

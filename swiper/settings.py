@@ -127,13 +127,59 @@ STATICFILES_DIRS = [
     os.path.join(BASE_DIR, 'static')
 ]
 
-# CACHES = {
-#     "default": {
-#         "BACKEND": "django_redis.cache.RedisCache",
-#         "LOCATION": "redis://101.200.73.123:6379/0",
-#         "OPTIONS": {
-#             "CLIENT_CLASS": "django_redis.client.DefaultClient",
-#             "PICKLE_VERSION": -1,
-#         }
-#     }
-# }
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': True,
+    # 格式配置
+    'formatters': {
+        'simple': {
+            'format': '%(asctime)s %(module)s.%(funcName)s: %(message)s',
+            'datefmt': '%Y-%m-%d %H:%M:%S',
+        },
+        'verbose': {'format': ('%(asctime)s %(levelname)s [%(process)d-%(threadName)s] '
+                               '%(module)s.%(funcName)s line %(lineno)d: %(message)s'),
+                    'datefmt': '%Y-%m-%d %H:%M:%S',
+                    }
+    },
+    # Handler 配置
+    'handlers': {
+        'console': {
+            'class': 'logging.StreamHandler',
+            'level': 'DEBUG' if DEBUG else 'WARNING'
+        },
+        'info': {
+            'class': 'logging.handlers.TimedRotatingFileHandler',
+            'filename': f'{BASE_DIR}/logs/info.log',  # ⽇志保存路径
+            'when': 'midnight',  # 每天切割⽇志
+            'backupCount': 30,  # ⽇志保留 30 天
+            'formatter': 'simple',
+            'level': 'INFO',
+        },
+        'error': {
+            'class': 'logging.handlers.TimedRotatingFileHandler',
+            'filename': f'{BASE_DIR}/logs/error.log',  # ⽇志保存路径
+            'when': 'W0',  # 每周⼀切割⽇志
+            'backupCount': 4,  # ⽇志保留 4 周
+            'formatter': 'verbose',
+            'level': 'WARNING',
+        }
+    },
+    # Logger 配置
+    'loggers': {
+        'django': {
+            'handlers': ['console'],
+            # Django自身日志设置成DEBUG级别，可以在控制台打印出Django ORM生成的SQL语句
+            'level': 'DEBUG' if DEBUG else 'INFO',
+        },
+        'inf': {
+            'handlers': ['info'],
+            'propagate': True,
+            'level': 'DEBUG' if DEBUG else 'INFO',
+        },
+        'err': {
+            'handlers': ['error'],
+            'propagate': True,
+            'level': 'DEBUG' if DEBUG else 'WARNING',
+        }
+    }
+}

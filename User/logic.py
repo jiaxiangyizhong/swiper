@@ -1,3 +1,4 @@
+import logging
 import re
 
 from common import keys
@@ -5,6 +6,8 @@ from libs.sms import send_sms
 from libs.cache import rds
 import random
 from tasks import celery_app
+
+info_log = logging.getLogger('inf')
 
 
 def is_phonenum(phonenum):
@@ -35,7 +38,8 @@ def send_vcode(phonenum):
 
     # 产生验证码
     vcode = random_code()
-    print('随机码：', vcode)
+    info_log.debug(f'验证码: {phonenum}-{vcode}')
+    print('vcode:', vcode)
     rds.set(key, vcode)
 
     # 向用户手机发送验证码
